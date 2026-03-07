@@ -5,10 +5,10 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=${TZ}
+      - TZ=
     volumes:
-      - /radarr:/config
-      - /omv/media:/media
+      - ./data/radarr:/config:z
+      - /omv/media:/media:z
     ports:
       - 7878:7878
     restart: unless-stopped
@@ -19,10 +19,10 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=${TZ}
+      - TZ=
     volumes:
-      - /sonarr:/config
-      - /omv/media:/media
+      - ./data/sonarr:/config:z
+      - /omv/media:/media:z
     restart: unless-stopped
     ports:
       - 8989:8989
@@ -33,9 +33,9 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=${TZ}
+      - TZ=
     volumes:
-      - /prowlarr:/config
+      - ./data/prowlarr:/config:z
     restart: unless-stopped
     ports:
       - 9696:9696
