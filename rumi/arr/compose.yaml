@@ -39,6 +39,8 @@ services:
     restart: unless-stopped
     ports:
       - 9696:9696
+    extra_hosts:
+      - host.docker.internal:host-gateway
 
   seerr:
     image: ghcr.io/seerr-team/seerr:latest
@@ -58,4 +60,12 @@ services:
       timeout: 3s
       interval: 15s
       retries: 3
+    networks:
+      - default
+      - jellyfin_default
     restart: unless-stopped
+
+networks:
+  default: {}
+  jellyfin_default:
+    external: true

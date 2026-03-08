@@ -19,6 +19,9 @@ services:
       - 6881:6881/udp  # QB
     volumes:
       - ./data/gluetun:/gluetun:Z
+    networks:
+      - default
+      - arr_default
     environment:
       - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_PORT_FORWARDING=on
@@ -26,7 +29,7 @@ services:
       - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
       - TZ=America/New York
       - UPDATER_PERIOD=24h
-      - FIREWALL_OUTBOUND_SUBNETS=192.168.1.0/24,10.0.0.0/16,172.21.0.0/16
+      - FIREWALL_OUTBOUND_SUBNETS=192.168.1.0/24,10.0.0.0/16,172.21.0.0/16,172.20.0.0/16
       - DOT_PROVIDERS=cloudflare,google
       - PUBLICIP_API=ip2location
         ### Wireguard Settings
@@ -38,7 +41,7 @@ services:
       - DNS_ADDRESS=10.2.0.1
       - LOG_LEVEL=debug
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "https://1.1.1.1"]
+      test: [CMD, wget, -qO-, https://1.1.1.1]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -46,7 +49,7 @@ services:
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
-    network_mode: "service:gluetun" #only allowed to use the gluetun network
+    network_mode: service:gluetun
     container_name: gt-qb
     environment:
       - PUID=1000
@@ -55,37 +58,32 @@ services:
       - WEBUI_PORT=8080
     volumes:
       - ./data/qbittorrent/config:/config:Z
-      - /omv:/omv #optional
+      - /omv:/omv
     restart: unless-stopped
     depends_on:
       gluetun:
         condition: service_healthy
-
 
   gluetun-qbittorrent-port-manager:
     image: snoringdragon/gluetun-qbittorrent-port-manager:latest
     restart: unless-stopped
     container_name: gt-port-manager
     volumes:
-      - ./data/gluetun:/tmp/gluetun:Z #Set "yourfolder" to the same directory you used for Gluetun
-    network_mode: "service:gluetun"
+      - ./data/gluetun:/tmp/gluetun:Z
+    network_mode: service:gluetun
     environment:
-      QBITTORRENT_SERVER: localhost # IP Address of qbittorrent
+      QBITTORRENT_SERVER: localhost
       QBITTORRENT_PORT: 8080
-      QBITTORRENT_USER: admin # username
-      QBITTORRENT_PASS: "UZ2s6.e.Ue*nPpZ.Xoe2" # password
+      QBITTORRENT_USER: admin
+      QBITTORRENT_PASS: UZ2s6.e.Ue*nPpZ.Xoe2
       PORT_FORWARDED: /tmp/gluetun/forwarded_port
-      HTTP_S: http # Select 'http' or 'https' depending on if you use certificates.
-      TZ: "America/New York"
+      HTTP_S: http
+      TZ: America/New York
     depends_on:
       gluetun:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-H", "Authorization: $controlServerAuthKey", "-s", "http://localhost:8000/v1/openvpn/status", "|", "grep", "-q", '{"status":"running"}']
-      interval: 30s
-      timeout: 10s
-      start_period: 60s
-      retries: 3
-      
 
-
+networks:
+  default: {}
+  arr_default:
+    external: true
