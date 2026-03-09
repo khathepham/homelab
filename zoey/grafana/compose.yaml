@@ -1,0 +1,12 @@
+services:
+  grafana:
+    image: grafana/grafana-oss
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana_volume:/var/lib/grafana
+volumes:
+  grafana_volume:
+    external: true
