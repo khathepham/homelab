@@ -1,0 +1,9 @@
+services:
+    photon:
+        image: rtuszik/photon-docker:latest
+        env_file: .env
+        volumes:
+            - /omv/docker-volumes/photon-data:/photon/data
+        restart: unless-stopped
+        ports:
+            - "2322:2322"

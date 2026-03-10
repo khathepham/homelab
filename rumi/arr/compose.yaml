@@ -3,9 +3,9 @@ services:
     image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     volumes:
       - ./data/radarr:/config:z
       - /omv/media:/media
@@ -17,9 +17,9 @@ services:
     image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     volumes:
       - ./data/sonarr:/config:z
       - /omv/media:/media
@@ -31,9 +31,9 @@ services:
     image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     volumes:
       - ./data/prowlarr:/config:z
     restart: unless-stopped
@@ -48,8 +48,8 @@ services:
     container_name: seerr
     environment:
       - LOG_LEVEL=debug
-      - TZ=Asia/Tashkent
-      - PORT=5055 #optional
+      - TZ=${TZ}
+      - PORT=5055
     ports:
       - 5055:5055
     volumes:

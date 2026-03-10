@@ -1,7 +1,6 @@
----
 services:
   gluetun:
-    image: qmcgaw/gluetun:v3.39.0 # Pinned to this version to avoid issues in v3.40+ specific to protonvpn
+    image: qmcgaw/gluetun:v3.39.0
     container_name: gluetun
     restart: always
     stdin_open: true
@@ -22,24 +21,7 @@ services:
     networks:
       - default
       - arr_default
-    environment:
-      - VPN_SERVICE_PROVIDER=protonvpn
-      - VPN_PORT_FORWARDING=on
-      - VPN_PORT_FORWARDING_PROVIDER=protonvpn
-      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
-      - TZ=America/New York
-      - UPDATER_PERIOD=24h
-      - FIREWALL_OUTBOUND_SUBNETS=192.168.1.0/24,10.0.0.0/16,172.21.0.0/16,172.20.0.0/16
-      - DOT_PROVIDERS=cloudflare,google
-      - PUBLICIP_API=ip2location
-        ### Wireguard Settings
-      - VPN_TYPE=wireguard
-      - WIREGUARD_PUBLIC_KEY=R0J2HK9bYV4Ww6tMk76hiTwiWbC6JvxqhvSNeO4tIhg=
-      - WIREGUARD_PRIVATE_KEY=uGeR5pW8yQj9W7Vxvl8xKORn0TyqUN2Fw+3mFwzkOGU=
-      - WIREGUARD_ENDPOINT_IP=151.243.141.5
-      - WIREGUARD_ADDRESSES=10.2.0.2/32
-      - DNS_ADDRESS=10.2.0.1
-      - LOG_LEVEL=debug
+    env_file: .env
     healthcheck:
       test: [CMD, wget, -qO-, https://1.1.1.1]
       interval: 10s
@@ -52,10 +34,10 @@ services:
     network_mode: service:gluetun
     container_name: gt-qb
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=UTC/UTC
-      - WEBUI_PORT=8080
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=${WEBUI_PORT}
     volumes:
       - ./data/qbittorrent/config:/config:Z
       - /omv:/omv
@@ -72,13 +54,13 @@ services:
       - ./data/gluetun:/tmp/gluetun:Z
     network_mode: service:gluetun
     environment:
-      QBITTORRENT_SERVER: localhost
-      QBITTORRENT_PORT: 8080
-      QBITTORRENT_USER: admin
-      QBITTORRENT_PASS: UZ2s6.e.Ue*nPpZ.Xoe2
-      PORT_FORWARDED: /tmp/gluetun/forwarded_port
-      HTTP_S: http
-      TZ: America/New York
+      - QBITTORRENT_SERVER=${QBITTORRENT_SERVER}
+      - QBITTORRENT_PORT=${QBITTORRENT_PORT}
+      - QBITTORRENT_USER=${QBITTORRENT_USER}
+      - QBITTORRENT_PASS=${QBITTORRENT_PASS}
+      - PORT_FORWARDED=${PORT_FORWARDED}
+      - HTTP_S=${HTTP_S}
+      - TZ=${TZ}
     depends_on:
       gluetun:
         condition: service_healthy

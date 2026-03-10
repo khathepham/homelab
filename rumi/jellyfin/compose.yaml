@@ -9,18 +9,7 @@ services:
     volumes:
       - ./data/config:/config:z
       - ./data/cache:/cache:z
-
       - /omv/media/media:/media
-
-      # Optional - extra fonts to be used during transcoding with subtitle burn-in
-      # - type: bind
-      #   source: /path/to/fonts
-      #   target: /usr/local/share/fonts/custom
-      #   read_only: true
-    restart: 'unless-stopped'
-    # Optional - alternative address used for autodiscovery
+    restart: unless-stopped
     environment:
-      - JELLYFIN_PublishedServerUrl=https://jellyfin.khathepham.com
-    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
-    # extra_hosts:
-    #   - 'host.docker.internal:host-gateway'
+      - JELLYFIN_PublishedServerUrl=${JELLYFIN_PublishedServerUrl}
