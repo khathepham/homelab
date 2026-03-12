@@ -1,24 +1,15 @@
-version: '3.8'
-
 services:
-    logger:
-      image: grafana/grafana
-      logging:
-        driver: loki
-        options:
-          loki-url: "http://192.168.1.184:3100/loki/api/v1/push"
-
     open-archiver:
         image: logiclabshq/open-archiver:latest
         container_name: open-archiver
         restart: unless-stopped
         ports:
-            - '4000:4000' # Backend
-            - '3000:3000' # Frontend
+            - '4000:4000'
+            - '4001:3000'
         env_file:
             - .env
         volumes:
-            - archiver-data:/var/data/open-archiver
+            - ${OMV_DIR}/openarchiver/archiver-data:/var/data/open-archiver
         depends_on:
             - postgres
             - valkey
@@ -28,53 +19,37 @@ services:
 
     postgres:
         image: postgres:17-alpine
-        container_name: postgres
+        container_name: open-archiver-postgres
         restart: unless-stopped
         environment:
-            POSTGRES_DB: ${POSTGRES_DB:-open_archive}
-            POSTGRES_USER: ${POSTGRES_USER:-admin}
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         volumes:
-            - pgdata:/var/lib/postgresql/data
-        ports:
-            - '5432:5432'
+            - ${DATA_DIR}/openarchiver/pgdata:/var/lib/postgresql/data
         networks:
             - open-archiver-net
 
     valkey:
         image: valkey/valkey:8-alpine
-        container_name: valkey
+        container_name: open-archiver-valkey
         restart: unless-stopped
         command: valkey-server --requirepass ${REDIS_PASSWORD}
-        ports:
-            - '6379:6379'
         volumes:
-            - valkeydata:/data
+            - ${DATA_DIR}/openarchiver/valkeydata:/data
         networks:
             - open-archiver-net
 
     meilisearch:
         image: getmeili/meilisearch:v1.15
-        container_name: meilisearch
+        container_name: open-archiver-meilisearch
         restart: unless-stopped
         environment:
-            MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-aSampleMasterKey}
-        ports:
-            - '7700:7700'
+            MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
         volumes:
-            - meilidata:/meili_data
+            - ${OMV_DIR}/openarchiver/meilidata:/meili_data
         networks:
             - open-archiver-net
-
-volumes:
-    pgdata:
-        driver: local
-    valkeydata:
-        driver: local
-    meilidata:
-        driver: local
-    archiver-data:
-        driver: local
 
 networks:
     open-archiver-net:
