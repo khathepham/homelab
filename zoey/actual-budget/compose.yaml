@@ -20,11 +20,12 @@ services:
     env_file: .env
     volumes:
       - ${DATA_DIR}/actual-helpers/actual-cache:/usr/src/app/cache
-    restart: "unless-stopped"
+    restart: unless-stopped
 
   actualtap-py:
     container_name: actualtap-py
-    image: ghcr.io/bobokun/actualtap-py:latest
+    build:
+      context: ./actualtap
     ports:
       - 15482:8000
     volumes:
