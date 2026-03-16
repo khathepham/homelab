@@ -11,7 +11,3 @@ services:
       - 8158:8080
     env_file:
       - .env
-
-volumes:
-  data:
-  keys:
