@@ -4,8 +4,8 @@ services:
     restart: unless-stopped
     # volumes used to keep data persistent
     volumes:
-      - ${DATA_DIR}/lubelogger/lublogger_data:/App/data
-      - ${DATA_DIR}/lubelogger/lublogger_keys:/root/.aspnet/DataProtection-Keys
+      - ${DATA_DIR}/lubelogger/lubelogger_data:/App/data
+      - ${DATA_DIR}/lubelogger/lubelogger_keys:/root/.aspnet/DataProtection-Keys
     # expose port and/or use serving via traefik
     ports:
       - 8158:8080
