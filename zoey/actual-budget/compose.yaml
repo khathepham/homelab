@@ -3,13 +3,6 @@ services:
     image: docker.io/actualbudget/actual-server:edge
     ports:
       - '5006:5006'
-    environment:
-      - ACTUAL_HTTPS_KEY=/data/selfhost.key
-      - ACTUAL_HTTPS_CERT=/data/selfhost.crt
-      # - ACTUAL_PORT=5006
-      # - ACTUAL_UPLOAD_FILE_SYNC_SIZE_LIMIT_MB=20
-      # - ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB=50
-      # - ACTUAL_UPLOAD_FILE_SIZE_LIMIT_MB=20
     volumes:
       - ${DATA_DIR}/actual-budget:/data
     restart: unless-stopped
