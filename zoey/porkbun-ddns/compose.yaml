@@ -1,0 +1,14 @@
+services:
+  porkbun-ddns:
+    image: "mietzen/porkbun-ddns:latest"
+    container_name: porkbun-ddns
+    env_file: .env
+    restart: unless-stopped
+
+# # Uncomment below to let it detect ipv6 address:
+#     networks:
+#       - ipv6_enabled
+
+# networks:
+#   ipv6_enabled:
+#     enable_ipv6: true
