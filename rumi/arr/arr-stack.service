@@ -1,0 +1,15 @@
+[Unit]
+Description=Arr Stack (Sonarr, Radarr, Prowlarr, Seerr, Flaresolverr)
+Requires=docker.service omv-media.mount
+After=docker.service omv-media.mount
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/khathepham/homelab/rumi/arr
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target

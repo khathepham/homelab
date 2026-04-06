@@ -1,0 +1,15 @@
+[Unit]
+Description=Gluetun VPN + qBittorrent Stack
+Requires=docker.service omv-media.mount omv-docker\x2dvolumes.mount
+After=docker.service omv-media.mount omv-docker\x2dvolumes.mount
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/khathepham/homelab/rumi/gluetun
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
