@@ -17,7 +17,7 @@ services:
       - 6881:6881      # QB
       - 6881:6881/udp  # QB
     volumes:
-      - ./data/gluetun:/gluetun:Z
+      - ./data/gluetun:/gluetun:z
     networks:
       - default
       - arr_default
@@ -51,7 +51,7 @@ services:
     restart: unless-stopped
     container_name: gt-port-manager
     volumes:
-      - ./data/gluetun:/tmp/gluetun:Z
+      - ./data/gluetun:/tmp/gluetun:z
     network_mode: service:gluetun
     environment:
       - QBITTORRENT_SERVER=${QBITTORRENT_SERVER}
