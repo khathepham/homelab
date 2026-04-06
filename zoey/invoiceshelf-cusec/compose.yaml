@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
 
   webapp:
-    image: invoiceshelf/invoiceshelf:nightly
+    image: invoiceshelf/invoiceshelf:nightly@sha256:5676cf68ba6b33fd597cb71bdd4b50b35960e0e020e927b6e54598a5ebbc657a
     container_name: invoiceshelf-variant-pgsql
     environment:
       - APP_NAME=InvoiceShelf

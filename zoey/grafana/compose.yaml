@@ -1,6 +1,6 @@
 services:
   grafana:
-    image: grafana/grafana-oss
+    image: grafana/grafana-oss:12.4.2
     container_name: grafana
     restart: unless-stopped
     ports:
@@ -9,14 +9,14 @@ services:
       - grafana_volume:/var/lib/grafana
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.7.1
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
     restart: unless-stopped
 
   promtail:
-    image: grafana/promtail:latest
+    image: grafana/promtail:3.6.10
     volumes:
       - /var/log:/var/log
     command: -config.file=/etc/promtail/config.yml

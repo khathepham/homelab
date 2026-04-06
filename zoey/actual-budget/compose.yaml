@@ -1,6 +1,6 @@
 services:
   actual_server:
-    image: docker.io/actualbudget/actual-server:edge
+    image: docker.io/actualbudget/actual-server:edge@sha256:39358b19ccde6813f6cd59e2b18a81731453a1fc60c1d7c8c25446274e32bec1
     ports:
       - '5006:5006'
     volumes:
@@ -9,7 +9,7 @@ services:
 
   actual-helpers:
     container_name: actual-helpers
-    image: ghcr.io/psybers/actual-helpers:latest
+    image: ghcr.io/psybers/actual-helpers:latest@sha256:fbed67fce610b92dc2a74832a2398a9bbc003b10b17d9816bc929fe184d04733
     env_file: .env
     volumes:
       - ${DATA_DIR}/actual-helpers/actual-cache:/usr/src/app/cache
