@@ -18,20 +18,22 @@ jobs:
 
       - name: Build deploy matrix
         id: build-matrix
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
-          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            # New branch — diff against main
+          base="$BEFORE_SHA"
+          if [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$base" 2>/dev/null; then
+            # New branch or force-push — diff against main
             git fetch origin main --depth=1
             base=origin/main
-          else
-            base=${{ github.event.before }}
           fi
 
-          matrix=$(git diff --name-only "$base" "${{ github.sha }}" \
+          matrix=$(git diff --name-only --diff-filter=d "$base" "$HEAD_SHA" \
             | grep -E '^(zoey|rumi)/[^/]+/' \
             | awk -F'/' '{print $1 "/" $2}' \
             | sort -u \
-            | jq -Rn '[inputs | split("/") | {host: .[0], service: .[1]}]')
+            | jq -Rcn '[inputs | split("/") | {host: .[0], service: .[1]}]')
 
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
           echo "has_changes=$([ "$matrix" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
@@ -45,21 +47,15 @@ jobs:
       matrix:
         stack: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
     name: "${{ matrix.stack.host }}: ${{ matrix.stack.service }}"
+    concurrency:
+      group: deploy-${{ matrix.stack.host }}-${{ matrix.stack.service }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
 
-      - name: Resolve host
-        id: host
-        run: |
-          if [ "${{ matrix.stack.host }}" = "zoey" ]; then
-            echo "ip=${{ secrets.ZOEY_HOST }}" >> $GITHUB_OUTPUT
-          else
-            echo "ip=${{ secrets.RUMI_HOST }}" >> $GITHUB_OUTPUT
-          fi
-
       - uses: ./.github/actions/deploy-stack
         with:
-          host: ${{ steps.host.outputs.ip }}
+          host: ${{ matrix.stack.host == 'zoey' && secrets.ZOEY_HOST || secrets.RUMI_HOST }}
           username: khathepham
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           wg-config: ${{ secrets.WG_CONFIG }}
