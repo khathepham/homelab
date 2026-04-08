@@ -1,6 +1,6 @@
 services:
   actual_server:
-    image: docker.io/actualbudget/actual-server:edge@sha256:39358b19ccde6813f6cd59e2b18a81731453a1fc60c1d7c8c25446274e32bec1
+    image: docker.io/actualbudget/actual-server:26.4.0
     ports:
       - '5006:5006'
     volumes:
@@ -17,8 +17,7 @@ services:
 
   actualtap-py:
     container_name: actualtap-py
-    build:
-      context: ./actualtap
+    image: ghcr.io/bobokun/actualtap-py:v0.1.9
     ports:
       - 15482:8000
     volumes:
