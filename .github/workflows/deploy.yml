@@ -3,6 +3,17 @@ name: Deploy Homelab Services
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      host:
+        description: "Host to deploy to (zoey or rumi)"
+        required: true
+        type: choice
+        options: [zoey, rumi]
+      service:
+        description: "Service directory name (e.g. immich, jellyfin)"
+        required: true
+        type: string
 
 jobs:
 
@@ -21,19 +32,25 @@ jobs:
         env:
           BEFORE_SHA: ${{ github.event.before }}
           HEAD_SHA: ${{ github.sha }}
+          DISPATCH_HOST: ${{ inputs.host }}
+          DISPATCH_SERVICE: ${{ inputs.service }}
         run: |
-          base="$BEFORE_SHA"
-          if [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$base" 2>/dev/null; then
-            # New branch or force-push — diff against main
-            git fetch origin main --depth=1
-            base=origin/main
-          fi
+          if [ -n "$DISPATCH_HOST" ] && [ -n "$DISPATCH_SERVICE" ]; then
+            # Manual dispatch — deploy the specified service directly
+            matrix=$(jq -Rcn '[{host: $ENV.DISPATCH_HOST, service: $ENV.DISPATCH_SERVICE}]')
+          else
+            base="$BEFORE_SHA"
+            if [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$base" 2>/dev/null; then
+              git fetch origin main --depth=1
+              base=origin/main
+            fi
 
-          matrix=$(git diff --name-only --diff-filter=d "$base" "$HEAD_SHA" \
-            | grep -E '^(zoey|rumi)/[^/]+/' \
-            | awk -F'/' '{print $1 "/" $2}' \
-            | sort -u \
-            | jq -Rcn '[inputs | split("/") | {host: .[0], service: .[1]}]')
+            matrix=$(git diff --name-only --diff-filter=d "$base" "$HEAD_SHA" \
+              | grep -E '^(zoey|rumi)/[^/]+/' \
+              | awk -F'/' '{print $1 "/" $2}' \
+              | sort -u \
+              | jq -Rcn '[inputs | split("/") | {host: .[0], service: .[1]}]')
+          fi
 
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
           echo "has_changes=$([ "$matrix" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
