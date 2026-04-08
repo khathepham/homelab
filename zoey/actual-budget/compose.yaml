@@ -1,6 +1,6 @@
 services:
   actual_server:
-    image: docker.io/actualbudget/actual-server:edge@sha256:39358b19ccde6813f6cd59e2b18a81731453a1fc60c1d7c8c25446274e32bec1
+    image: docker.io/actualbudget/actual-server:edge@sha256:f66f61ff688ca4e7c954285def2c1c4688e6891767d6d038f715f8fe15fc3b02
     ports:
       - '5006:5006'
     volumes:
