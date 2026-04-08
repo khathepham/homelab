@@ -1,0 +1,66 @@
+name: Deploy Homelab Services
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+      has_changes: ${{ steps.build-matrix.outputs.has_changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build deploy matrix
+        id: build-matrix
+        run: |
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # New branch — diff against main
+            git fetch origin main --depth=1
+            base=origin/main
+          else
+            base=${{ github.event.before }}
+          fi
+
+          matrix=$(git diff --name-only "$base" "${{ github.sha }}" \
+            | grep -E '^(zoey|rumi)/[^/]+/' \
+            | awk -F'/' '{print $1 "/" $2}' \
+            | sort -u \
+            | jq -Rn '[inputs | split("/") | {host: .[0], service: .[1]}]')
+
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+          echo "has_changes=$([ "$matrix" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+    name: "${{ matrix.stack.host }}: ${{ matrix.stack.service }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve host
+        id: host
+        run: |
+          if [ "${{ matrix.stack.host }}" = "zoey" ]; then
+            echo "ip=${{ secrets.ZOEY_HOST }}" >> $GITHUB_OUTPUT
+          else
+            echo "ip=${{ secrets.RUMI_HOST }}" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: ./.github/actions/deploy-stack
+        with:
+          host: ${{ steps.host.outputs.ip }}
+          username: khathepham
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          wg-config: ${{ secrets.WG_CONFIG }}
+          compose-path: ${{ matrix.stack.host }}/${{ matrix.stack.service }}/compose.yaml
