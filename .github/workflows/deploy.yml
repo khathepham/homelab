@@ -6,246 +6,61 @@ on:
 
 jobs:
 
-  # ── ZOEY ──────────────────────────────────────────────────────────────────
-
-  deploy-nginx-proxy-manager:
-    name: "Zoey: nginx-proxy-manager"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/nginx-proxy-manager/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/nginx-proxy-manager/')
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+      has_changes: ${{ steps.build-matrix.outputs.has_changes }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build deploy matrix
+        id: build-matrix
+        run: |
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # New branch — diff against main
+            git fetch origin main --depth=1
+            base=origin/main
+          else
+            base=${{ github.event.before }}
+          fi
+
+          matrix=$(git diff --name-only "$base" "${{ github.sha }}" \
+            | grep -E '^(zoey|rumi)/[^/]+/' \
+            | awk -F'/' '{print $1 "/" $2}' \
+            | sort -u \
+            | jq -Rn '[inputs | split("/") | {host: .[0], service: .[1]}]')
+
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+          echo "has_changes=$([ "$matrix" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
+    name: "${{ matrix.stack.host }}: ${{ matrix.stack.service }}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve host
+        id: host
+        run: |
+          if [ "${{ matrix.stack.host }}" = "zoey" ]; then
+            echo "ip=${{ secrets.ZOEY_HOST }}" >> $GITHUB_OUTPUT
+          else
+            echo "ip=${{ secrets.RUMI_HOST }}" >> $GITHUB_OUTPUT
+          fi
+
       - uses: ./.github/actions/deploy-stack
         with:
-          host: ${{ secrets.ZOEY_HOST }}
+          host: ${{ steps.host.outputs.ip }}
           username: khathepham
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/nginx-proxy-manager/compose.yaml
-
-  deploy-actual-budget:
-    name: "Zoey: actual-budget"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/actual-budget/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/actual-budget/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/actual-budget/compose.yaml
-
-  deploy-immich:
-    name: "Zoey: immich"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/immich/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/immich/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/immich/compose.yaml
-
-  deploy-uptime-kuma:
-    name: "Zoey: uptime-kuma"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/uptime-kuma/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/uptime-kuma/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/uptime-kuma/compose.yaml
-
-  deploy-grafana:
-    name: "Zoey: grafana"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/grafana/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/grafana/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/grafana/compose.yaml
-
-  deploy-photon:
-    name: "Zoey: photon"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/photon/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/photon/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/photon/compose.yaml
-
-  deploy-dawarich:
-    name: "Zoey: dawarich"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/dawarich/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/dawarich/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/dawarich/compose.yaml
-
-  deploy-lubelogger:
-    name: "Zoey: lubelogger"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/lubelogger/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/lubelogger/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/lubelogger/compose.yaml
-
-  deploy-invoiceshelf:
-    name: "Zoey: invoiceshelf-cusec"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/invoiceshelf-cusec/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/invoiceshelf-cusec/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/invoiceshelf-cusec/compose.yaml
-
-  deploy-porkbun-ddns:
-    name: "Zoey: porkbun-ddns"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/porkbun-ddns/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/porkbun-ddns/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/porkbun-ddns/compose.yaml
-
-  deploy-open-archiver:
-    name: "Zoey: open-archiver"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/open-archiver/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/open-archiver/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/open-archiver/compose.yaml
-
-  deploy-foundry:
-    name: "Zoey: foundry"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'zoey/foundry/') ||
-      contains(toJSON(github.event.commits.*.added), 'zoey/foundry/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.ZOEY_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: zoey/foundry/compose.yaml
-
-  # ── RUMI ──────────────────────────────────────────────────────────────────
-
-  deploy-arr:
-    name: "Rumi: arr"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'rumi/arr/') ||
-      contains(toJSON(github.event.commits.*.added), 'rumi/arr/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.RUMI_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: rumi/arr/compose.yaml
-
-  deploy-gluetun:
-    name: "Rumi: gluetun"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'rumi/gluetun/') ||
-      contains(toJSON(github.event.commits.*.added), 'rumi/gluetun/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.RUMI_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: rumi/gluetun/compose.yaml
-
-  deploy-jellyfin:
-    name: "Rumi: jellyfin"
-    if: |
-      contains(toJSON(github.event.commits.*.modified), 'rumi/jellyfin/') ||
-      contains(toJSON(github.event.commits.*.added), 'rumi/jellyfin/')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-stack
-        with:
-          host: ${{ secrets.RUMI_HOST }}
-          username: khathepham
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
-          compose-path: rumi/jellyfin/compose.yaml
+          compose-path: ${{ matrix.stack.host }}/${{ matrix.stack.service }}/compose.yaml
