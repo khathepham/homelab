@@ -31,7 +31,7 @@ jobs:
             | grep -E '^(zoey|rumi)/[^/]+/' \
             | awk -F'/' '{print $1 "/" $2}' \
             | sort -u \
-            | jq -Rn '[inputs | split("/") | {host: .[0], service: .[1]}]')
+            | jq -Rcn '[inputs | split("/") | {host: .[0], service: .[1]}]')
 
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
           echo "has_changes=$([ "$matrix" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
