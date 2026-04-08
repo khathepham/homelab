@@ -25,7 +25,9 @@ runs:
       shell: bash
       run: |
         sudo apt-get install -y --quiet wireguard resolvconf
+        sudo wg-quick down wg0 2>/dev/null || true
         echo "${{ inputs.wg-config }}" | sudo tee /etc/wireguard/wg0.conf > /dev/null
+        sudo cat /etc/wireguard/wg0.conf | sed 's/PrivateKey = .*/PrivateKey = [REDACTED]/'
         sudo wg-quick up wg0
 
     - name: Deploy
