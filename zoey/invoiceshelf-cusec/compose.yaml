@@ -6,7 +6,7 @@
 services:
   database:
     container_name: invoiceshelf-pgsql
-    image: postgres:15
+    image: postgres:18
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=${POSTGRES_USER}
