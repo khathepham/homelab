@@ -1,6 +1,6 @@
 services:
   gluetun:
-    image: qmcgaw/gluetun:v3.39.0
+    image: qmcgaw/gluetun:v3.41.1
     container_name: gluetun
     restart: always
     stdin_open: true
