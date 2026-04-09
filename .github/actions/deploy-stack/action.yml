@@ -29,6 +29,12 @@ runs:
         echo "${{ inputs.wg-config }}" | sudo tee /etc/wireguard/wg0.conf > /dev/null
         sudo cat /etc/wireguard/wg0.conf | sed 's/PrivateKey = .*/PrivateKey = [REDACTED]/'
         sudo wg-quick up wg0
+    - name: WG diagnostics
+      shell: bash
+      run: |
+        sudo wg show wg0
+        ping -c 2 -W 2 10.8.0.1 || true
+        ping -c 2 -W 2 192.168.1.185 || true
 
     - name: Deploy
       uses: appleboy/ssh-action@v1
