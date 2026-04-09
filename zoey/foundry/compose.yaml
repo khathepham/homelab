@@ -1,6 +1,6 @@
 services:
   foundry:
-    image: felddy/foundryvtt:13.351.0
+    image: felddy/foundryvtt:14.359.0
     hostname: my_foundry_host
     volumes:
       - ${DATA_DIR}/foundryvtt/foundrydata:/data
