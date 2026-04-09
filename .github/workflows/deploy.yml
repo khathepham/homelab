@@ -69,6 +69,14 @@ jobs:
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
+      - name: Connect to WireGuard
+        shell: bash
+        run: |
+          sudo apt-get install -y --quiet wireguard resolvconf
+          echo "${{ inputs.wg-config }}" | sudo tee /etc/wireguard/wg0.conf > /dev/null
+          sudo cat /etc/wireguard/wg0.conf | sed 's/PrivateKey = .*/PrivateKey = [REDACTED]/'
+          sudo wg-quick up wg0
+
 
       - uses: ./.github/actions/deploy-stack
         with:
