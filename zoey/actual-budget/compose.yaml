@@ -27,7 +27,7 @@ services:
   actual-mcp:
       stdin_open: true
       ports:
-          - 3000:3000
+          - 30001:3000
       volumes:
           - ${DATA_DIR}/actual-mcp:/data
       environment:
