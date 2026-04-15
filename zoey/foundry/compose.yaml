@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
 
   filebrowser:
-    image: hurlenko/filebrowser:v2.63.1
+    image: hurlenko/filebrowser:v2.63.2
     user: "1000:1000"
     ports:
       - 8080:8080
