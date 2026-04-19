@@ -23,17 +23,3 @@ services:
     volumes:
       - ${DATA_DIR}/actual-tap:/config
     restart: unless-stopped
-
-  actual-mcp:
-      stdin_open: true
-      ports:
-          - 30001:3000
-      volumes:
-          - ${DATA_DIR}/actual-mcp:/data
-      environment:
-          - ACTUAL_PASSWORD=${ACTUAL_SERVER_PASSWORD}
-          - ACTUAL_SERVER_URL=${ACTUAL_SERVER_URL}
-          - ACTUAL_BUDGET_SYNC_ID=${ACTUAL_SYNC_ID}
-          - BEARER_TOKEN=${BEARER_TOKEN}
-      image: sstefanov/actual-mcp:v1.11.2
-      command: --sse --enable-write --enable-bearer
