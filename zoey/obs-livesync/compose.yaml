@@ -1,0 +1,14 @@
+services:
+  couchdb:
+    image: couchdb:3.5.1
+    container_name: obs-livesync-couchdb
+    user: 5984:5984
+    env_file: .env
+    volumes:
+      - ${DATA_DIR}/livesync/couchdb-data:/opt/couchdb/data
+      - ${DATA_DIR}/livesync/couchdb-etc:/opt/couchdb/etc/local.d
+
+
+    ports:
+      - 5984:5984
+    restart: unless-stopped
