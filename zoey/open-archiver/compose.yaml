@@ -41,13 +41,20 @@ services:
             - open-archiver-net
 
     meilisearch:
-        image: getmeili/meilisearch:v1.42
+        image: getmeili/meilisearch:v1.42.1
         container_name: open-archiver-meilisearch
         restart: unless-stopped
         environment:
             MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
         volumes:
             - ${OMV_DIR}/openarchiver/meilidata:/meili_data
+        networks:
+            - open-archiver-net
+
+    tika:
+        image: apache/tika:3.2.2.0-full
+        container_name: tika
+        restart: unless-stopped
         networks:
             - open-archiver-net
 
