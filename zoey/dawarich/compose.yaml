@@ -42,7 +42,7 @@ services:
     # command: postgres -c config_file=/etc/postgresql/postgresql.conf # Use custom config, uncomment if you want to use a custom config
 
   dawarich_app:
-    image: freikin/dawarich:1.7.0
+    image: freikin/dawarich:1.7.2
     container_name: dawarich_app
     volumes:
       - /home/khathepham/data/dawarich/public:/var/app/public
@@ -99,7 +99,7 @@ services:
           memory: ${APP_MEMORY_LIMIT:-4G}
 
   dawarich_sidekiq:
-    image: freikin/dawarich:1.7.0
+    image: freikin/dawarich:1.7.2
     container_name: dawarich_sidekiq
     volumes:
       - /home/khathepham/data/dawarich/public:/var/app/public
