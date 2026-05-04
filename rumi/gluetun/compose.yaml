@@ -40,8 +40,10 @@ services:
       - WEBUI_PORT=${WEBUI_PORT}
     volumes:
       - ./data/qbittorrent/config:/config:Z
-      - /omv:/omv
+      - /omv:/omv:shared
     restart: unless-stopped
+    security_opt:
+      - label:disable
     depends_on:
       gluetun:
         condition: service_healthy
