@@ -9,7 +9,7 @@ services:
     volumes:
       - ./data/config:/config:z
       - ./data/cache:/cache:z
-      - /omv/media/media:/media
+      - /omv/media/media:/media:shared
     restart: unless-stopped
     environment:
       - JELLYFIN_PublishedServerUrl=${JELLYFIN_PublishedServerUrl}
