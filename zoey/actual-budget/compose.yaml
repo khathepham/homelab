@@ -9,7 +9,7 @@ services:
 
   actual-helpers:
     container_name: actual-helpers
-    image: ghcr.io/psybers/actual-helpers:latest@sha256:697328499c1afc67a8a81b681738f3606651c889890fd59076a006bd68aa01c3
+    image: ghcr.io/psybers/actual-helpers:latest@sha256:ade76528bb8dba28c62ab83dcc02ba3681a31e6b2605cdb0dbfe7d2430a9bc98
     env_file: .env
     volumes:
       - ${DATA_DIR}/actual-helpers/actual-cache:/usr/src/app/cache
