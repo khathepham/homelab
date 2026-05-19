@@ -1,5 +1,5 @@
 name: Deploy Docker Stack
-description: Connect to the home network via WireGuard and deploy a docker compose stack
+description: Connect to the home network via Tailscale and deploy a docker compose stack
 
 inputs:
   host:
@@ -11,8 +11,11 @@ inputs:
   ssh-key:
     description: SSH private key
     required: true
-  wg-config:
-    description: WireGuard peer configuration
+  ts-oauth-client-id:
+    description: Tailscale OAuth client ID
+    required: true
+  ts-oauth-secret:
+    description: Tailscale OAuth client secret
     required: true
   compose-path:
     description: Path to compose.yaml relative to ~/homelab
@@ -21,20 +24,13 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Connect to WireGuard
-      shell: bash
-      run: |
-        sudo apt-get install -y --quiet wireguard resolvconf
-        sudo wg-quick down wg0 2>/dev/null || true
-        echo "${{ inputs.wg-config }}" | sudo tee /etc/wireguard/wg0.conf > /dev/null
-        sudo cat /etc/wireguard/wg0.conf | sed 's/PrivateKey = .*/PrivateKey = [REDACTED]/'
-        sudo wg-quick up wg0
-    - name: WG diagnostics
-      shell: bash
-      run: |
-        sudo wg show wg0
-        ping -c 2 -W 2 10.8.0.1 || true
-        ping -c 2 -W 2 192.168.1.185 || true
+    - name: Connect to Tailscale
+      uses: tailscale/github-action@v3
+      with:
+        oauth-client-id: ${{ inputs.ts-oauth-client-id }}
+        oauth-secret: ${{ inputs.ts-oauth-secret }}
+        tags: tag:ci
+        args: --accept-routes
 
     - name: Deploy
       uses: appleboy/ssh-action@v1
@@ -43,8 +39,3 @@ runs:
         username: ${{ inputs.username }}
         key: ${{ inputs.ssh-key }}
         script: cd ~/homelab && git pull --ff-only && docker compose -f ${{ inputs.compose-path }} up -d --pull always
-
-    - name: Disconnect from WireGuard
-      if: always()
-      shell: bash
-      run: sudo wg-quick down wg0 || true
