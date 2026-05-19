@@ -1,11 +1,14 @@
 services:
   foundry:
-    image: felddy/foundryvtt:14.360.0
+    image: felddy/foundryvtt:14.361.0
     hostname: my_foundry_host
     volumes:
       - ${DATA_DIR}/foundryvtt/foundrydata:/data
     env_file:
       - .env
+    environment:
+      - FOUNDRY_MINIFY_STATIC_FILES = true
+      
     ports:
       - target: 30000
         published: 30000
@@ -13,7 +16,7 @@ services:
     restart: unless-stopped
 
   filebrowser:
-    image: hurlenko/filebrowser:v2.63.2
+    image: hurlenko/filebrowser:v2.63.4
     user: "1000:1000"
     ports:
       - 8080:8080

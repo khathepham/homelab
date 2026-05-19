@@ -8,7 +8,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ./data/radarr:/config:z
-      - /omv/media:/media
+      - /omv/media:/media:shared
     ports:
       - 7878:7878
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ./data/sonarr:/config:z
-      - /omv/media:/media
+      - /omv/media:/media:shared
     restart: unless-stopped
     ports:
       - 8989:8989
