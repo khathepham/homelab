@@ -11,11 +11,8 @@ inputs:
   ssh-key:
     description: SSH private key
     required: true
-  ts-oauth-client-id:
-    description: Tailscale OAuth client ID
-    required: true
-  ts-oauth-secret:
-    description: Tailscale OAuth client secret
+  ts-authkey:
+    description: Tailscale ephemeral, reusable auth key (tag:ci)
     required: true
   compose-path:
     description: Path to compose.yaml relative to ~/homelab
@@ -27,9 +24,7 @@ runs:
     - name: Connect to Tailscale
       uses: tailscale/github-action@v3
       with:
-        oauth-client-id: ${{ inputs.ts-oauth-client-id }}
-        oauth-secret: ${{ inputs.ts-oauth-secret }}
-        tags: tag:ci
+        authkey: ${{ inputs.ts-authkey }}
         args: --accept-routes
 
     - name: Deploy
