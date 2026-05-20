@@ -101,6 +101,7 @@ services:
   dawarich_sidekiq:
     image: freikin/dawarich:1.7.8
     container_name: dawarich_sidekiq
+    stop_grace_period: 30s
     volumes:
       - /home/khathepham/data/dawarich/public:/var/app/public
       - /home/khathepham/data/dawarich/watched:/var/app/tmp/imports/watched

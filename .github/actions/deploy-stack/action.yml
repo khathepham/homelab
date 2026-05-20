@@ -33,4 +33,4 @@ runs:
         host: ${{ inputs.host }}
         username: ${{ inputs.username }}
         key: ${{ inputs.ssh-key }}
-        script: cd ~/homelab && git pull --ff-only && docker compose -f ${{ inputs.compose-path }} up -d --pull always
+        script: cd ~/homelab && git fetch origin main --prune && git reset --hard origin/main && docker compose -f ${{ inputs.compose-path }} up -d --pull always
