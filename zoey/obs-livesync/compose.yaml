@@ -1,6 +1,6 @@
 services:
   couchdb:
-    image: couchdb:3.5.1
+    image: couchdb:3.5.2
     container_name: obs-livesync-couchdb
     user: 5984:5984
     env_file: .env
