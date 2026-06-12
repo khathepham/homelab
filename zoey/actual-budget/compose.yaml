@@ -1,6 +1,6 @@
 services:
   actual_server:
-    image: docker.io/actualbudget/actual-server:26.5.2
+    image: docker.io/actualbudget/actual-server:26.6.0
     ports:
       - '5006:5006'
     volumes:
