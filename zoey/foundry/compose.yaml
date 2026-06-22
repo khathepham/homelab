@@ -1,6 +1,6 @@
 services:
   foundry:
-    image: felddy/foundryvtt:14.363.0
+    image: felddy/foundryvtt:14.364.0
     hostname: my_foundry_host
     volumes:
       - ${DATA_DIR}/foundryvtt/foundrydata:/data
@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   filebrowser:
-    image: hurlenko/filebrowser:v2.63.5
+    image: hurlenko/filebrowser:v2.63.15
     user: "1000:1000"
     ports:
       - 8080:8080
