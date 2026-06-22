@@ -5,8 +5,9 @@
     "group:allNonMajor"
   ],
   "packageRules": [
-  {
-    "matchPackageNames": ["meilisearch", "getmeili/meilisearch"],
-    "enabled": false
-  }
+    {
+      "matchPackageNames": ["meilisearch", "getmeili/meilisearch"],
+      "enabled": false
+    }
+  ]
 }
