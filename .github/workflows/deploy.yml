@@ -1,8 +1,12 @@
 name: Deploy Homelab Services
 
 on:
-  push:
+  pull_request:
     branches: [main]
+    types: [closed]
+    paths:
+      - 'zoey/**/compose.yaml'
+      - 'rumi/**/compose.yaml'
   workflow_dispatch:
     inputs:
       host:
@@ -18,6 +22,7 @@ on:
 jobs:
 
   detect-changes:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.build-matrix.outputs.matrix }}
@@ -25,13 +30,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
           fetch-depth: 0
 
       - name: Build deploy matrix
         id: build-matrix
         env:
-          BEFORE_SHA: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           DISPATCH_HOST: ${{ inputs.host }}
           DISPATCH_SERVICE: ${{ inputs.service }}
         run: |
@@ -39,13 +45,7 @@ jobs:
             # Manual dispatch — deploy the specified service directly
             matrix=$(jq -Rcn '[{host: $ENV.DISPATCH_HOST, service: $ENV.DISPATCH_SERVICE}]')
           else
-            base="$BEFORE_SHA"
-            if [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$base" 2>/dev/null; then
-              git fetch origin main --depth=1
-              base=origin/main
-            fi
-
-            matrix=$(git diff --name-only --diff-filter=d "$base" "$HEAD_SHA" \
+            matrix=$(git diff --name-only --diff-filter=d "$BASE_SHA" "$HEAD_SHA" \
               | grep -E '^(zoey|rumi)/[^/]+/' \
               | awk -F'/' '{print $1 "/" $2}' \
               | sort -u \
@@ -68,20 +68,13 @@ jobs:
       group: deploy-${{ matrix.stack.host }}-${{ matrix.stack.service }}
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v7
-      - name: Connect to WireGuard
-        shell: bash
-        run: |
-          sudo apt-get install -y --quiet wireguard resolvconf
-          echo "${{ inputs.wg-config }}" | sudo tee /etc/wireguard/wg0.conf > /dev/null
-          sudo cat /etc/wireguard/wg0.conf | sed 's/PrivateKey = .*/PrivateKey = [REDACTED]/'
-          sudo wg-quick up wg0
-
-
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
       - uses: ./.github/actions/deploy-stack
         with:
           host: ${{ matrix.stack.host == 'zoey' && secrets.ZOEY_HOST || secrets.RUMI_HOST }}
           username: khathepham
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          wg-config: ${{ secrets.WG_CONFIG }}
+          ts-authkey: ${{ secrets.TS_AUTHKEY }}
           compose-path: ${{ matrix.stack.host }}/${{ matrix.stack.service }}/compose.yaml
