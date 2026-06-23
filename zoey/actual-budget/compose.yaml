@@ -29,10 +29,8 @@ services:
   # Production-ready configuration with secrets management
 
   actual-mcp-server:
-    image: actual-mcp-server:latest
-    container_name: actual-mcp-prod
-    profiles:
-      - production
+    image: ghcr.io/agigante80/actual-mcp-server:0.7.11
+    container_name: actual-mcp-server
     restart: unless-stopped
     ports:
       - "3600:3600"
@@ -50,7 +48,7 @@ services:
       # If on the same Docker network, use the container service name: http://actual:5006
       - ACTUAL_SERVER_URL=${ACTUAL_SERVER_URL:?ACTUAL_SERVER_URL is required}
       - ACTUAL_PASSWORD=${ACTUAL_SERVER_PASSWORD:?ACTUAL_SERVER_PASSWORD is required}
-      - ACTUAL_BUDGET_SYNC_ID=${ACTUAL_BUDGET_SYNC_ID:?ACTUAL_BUDGET_SYNC_ID is required}
+      - ACTUAL_BUDGET_SYNC_ID=${ACTUAL_SYNC_ID:?ACTUAL_SYNC_ID is required}
       # Optional: encryption password for E2E-encrypted default budget.
       # #161: if you set this AND the upstream above is http://, the server
       # refuses to start (cleartext password). Use an https:// upstream, or add
@@ -100,7 +98,7 @@ services:
       # - ACTUAL_API_CONCURRENCY=5
 
       # Authentication: static Bearer token or OIDC (see README)
-      # - MCP_SSE_AUTHORIZATION=${MCP_SSE_AUTHORIZATION}
+      - MCP_SSE_AUTHORIZATION=Bearer ${BEARER_TOKEN:?BEARER_TOKEN is required}
       # - AUTH_PROVIDER=none          # set to 'oidc' for JWKS JWT validation
       # - OIDC_ISSUER=${OIDC_ISSUER}  # required when AUTH_PROVIDER=oidc
       # - OIDC_RESOURCE=${OIDC_RESOURCE}
