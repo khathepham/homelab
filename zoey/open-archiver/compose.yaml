@@ -41,11 +41,13 @@ services:
             - open-archiver-net
 
     meilisearch:
-        image: getmeili/meilisearch:v1.42.1
+        image: getmeili/meilisearch:v1.48.1
         container_name: open-archiver-meilisearch
         restart: unless-stopped
         environment:
             MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+            MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE: true
+
         volumes:
             - ${OMV_DIR}/openarchiver/meilidata:/meili_data
         networks:

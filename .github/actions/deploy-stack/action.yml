@@ -22,7 +22,7 @@ runs:
   using: composite
   steps:
     - name: Connect to Tailscale
-      uses: tailscale/github-action@v3
+      uses: tailscale/github-action@v4
       with:
         authkey: ${{ inputs.ts-authkey }}
         args: --accept-routes
