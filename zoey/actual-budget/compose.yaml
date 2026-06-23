@@ -23,3 +23,163 @@ services:
     volumes:
       - ${DATA_DIR}/actual-tap:/config
     restart: unless-stopped
+     # --------------------------------------------------------------------------
+  # Actual MCP Server - Production Mode
+  # --------------------------------------------------------------------------
+  # Production-ready configuration with secrets management
+
+  actual-mcp-server:
+    image: actual-mcp-server:latest
+    container_name: actual-mcp-prod
+    profiles:
+      - production
+    restart: unless-stopped
+    ports:
+      - "3600:3600"
+    volumes:
+      # Required: local cache for the @actual-app/api library.
+      # The API downloads your budget data locally to run queries; this MUST be a persistent path.
+      # Canonical container data dir (#228): /app/data, the dir the image creates and chowns.
+      - ${DATA_DIR}/actual-mcp/mcp-data:/app/data
+      # Persist logs
+      - ${DATA_DIR}/actual-mcp/mcp-logs:/app/logs
+    environment:
+      # Actual Finance connection.
+      # Use the same URL you type in your browser to open Actual Budget.
+      # Examples: http://localhost:5006, http://192.168.1.50:5006, https://actual.yourdomain.com
+      # If on the same Docker network, use the container service name: http://actual:5006
+      - ACTUAL_SERVER_URL=${ACTUAL_SERVER_URL:?ACTUAL_SERVER_URL is required}
+      - ACTUAL_PASSWORD=${ACTUAL_SERVER_PASSWORD:?ACTUAL_SERVER_PASSWORD is required}
+      - ACTUAL_BUDGET_SYNC_ID=${ACTUAL_BUDGET_SYNC_ID:?ACTUAL_BUDGET_SYNC_ID is required}
+      # Optional: encryption password for E2E-encrypted default budget.
+      # #161: if you set this AND the upstream above is http://, the server
+      # refuses to start (cleartext password). Use an https:// upstream, or add
+      # - ALLOW_INSECURE_UPSTREAM=true when the hop is a trusted internal network.
+      # - ACTUAL_BUDGET_PASSWORD=${ACTUAL_BUDGET_PASSWORD}
+      # Optional: friendly name for the default budget (default: "Default")
+      - BUDGET_DEFAULT_NAME=USA
+
+      # ── Multi-Budget Switching (optional) ─────────────────────────────────
+      # The AI can switch between budgets at runtime with actual_budgets_switch.
+      # BUDGET_N_SERVER_URL and BUDGET_N_PASSWORD fall back to ACTUAL_* if omitted,
+      # so budgets on the same server need only NAME and SYNC_ID.
+      #
+      # Budget 1 (same server, same password): SERVER_URL and PASSWORD omitted
+      # - BUDGET_1_NAME=Shared Family Account
+      # - BUDGET_1_SYNC_ID=${BUDGET_1_SYNC_ID}
+      #
+      # Budget 2 (same server, different password): only PASSWORD overridden
+      # - BUDGET_2_NAME=Business
+      # - BUDGET_2_PASSWORD=${BUDGET_2_PASSWORD}
+      # - BUDGET_2_SYNC_ID=${BUDGET_2_SYNC_ID}
+      #
+      # Budget 3 (entirely separate Actual server): full override
+      # - BUDGET_3_NAME=Remote Office
+      # - BUDGET_3_SERVER_URL=https://actual-office.example.com:5006
+      # - BUDGET_3_PASSWORD=${BUDGET_3_PASSWORD}
+      # - BUDGET_3_SYNC_ID=${BUDGET_3_SYNC_ID}
+      # - BUDGET_3_ENCRYPTION_PASSWORD=${BUDGET_3_ENCRYPTION_PASSWORD}
+
+      # MCP Bridge settings
+      - MCP_BRIDGE_DATA_DIR=/app/data
+      - MCP_BRIDGE_PORT=3600
+      - MCP_BRIDGE_BIND_HOST=0.0.0.0
+      # #242: HTTP auth is required-by-default. On this 0.0.0.0 (non-loopback)
+      # bind the server refuses to start unless you set MCP_SSE_AUTHORIZATION (or
+      # AUTH_PROVIDER=oidc) below. To run open deliberately behind your own
+      # authenticating proxy, set MCP_ALLOW_UNAUTHENTICATED=true.
+      - MCP_BRIDGE_LOG_LEVEL=info
+      - MCP_BRIDGE_STORE_LOGS=true
+      - MCP_BRIDGE_LOG_DIR=/app/logs
+      - MCP_BRIDGE_MAX_FILES=30d
+      # - MCP_BRIDGE_MAX_LOG_SIZE=20m
+
+      # Session management
+      - MAX_CONCURRENT_SESSIONS=15
+      # - SESSION_IDLE_TIMEOUT_MINUTES=5
+      # - ACTUAL_API_CONCURRENCY=5
+
+      # Authentication: static Bearer token or OIDC (see README)
+      # - MCP_SSE_AUTHORIZATION=${MCP_SSE_AUTHORIZATION}
+      # - AUTH_PROVIDER=none          # set to 'oidc' for JWKS JWT validation
+      # - OIDC_ISSUER=${OIDC_ISSUER}  # required when AUTH_PROVIDER=oidc
+      # - OIDC_RESOURCE=${OIDC_RESOURCE}
+      # - OIDC_SCOPES=${OIDC_SCOPES}
+      # - AUTH_BUDGET_ACL=${AUTH_BUDGET_ACL}
+
+      # Timezone (set to your local timezone)
+      - TZ=${TZ:-UTC}
+
+      # Production settings
+      - NODE_ENV=production
+    networks:
+      - actual-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  # --------------------------------------------------------------------------
+  # Reverse Proxy - Traefik (Optional)
+  # --------------------------------------------------------------------------
+  # Uncomment to add HTTPS and automatic SSL with Let's Encrypt
+
+  # traefik:
+  #   image: traefik:v2.10
+  #   container_name: traefik
+  #   profiles:
+  #     - production
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+  #     - ./traefik/acme.json:/acme.json
+  #   networks:
+  #     - actual-network
+
+  # ----------------------------------------------------------------------------
+  # Networks
+  # ----------------------------------------------------------------------------
+networks:
+  actual-network:
+    driver: bridge
+    name: actual-network
+  librechat-net:
+    external: true
+    name: librechat-net
+  actual-net:
+    external: true
+    name: actual-net
+
+
+# ============================================================================
+# Usage Examples
+# ============================================================================
+#
+# Prerequisites: Have an Actual Budget server running (self-hosted or cloud)
+#
+# 1. Development mode:
+#    $ docker compose --profile dev up
+#
+# 2. Production deployment:
+#    $ docker compose --profile production up -d
+#
+# 3. Build custom image:
+#    $ docker compose build mcp-server-dev
+#
+# 4. View logs:
+#    $ docker compose logs -f mcp-server-dev
+#
+# 5. Stop all services:
+#    $ docker compose down
+#
+# 6. Remove all data (CAUTION: This deletes all data):
+#    $ docker compose down -v
+#
+# ============================================================================
