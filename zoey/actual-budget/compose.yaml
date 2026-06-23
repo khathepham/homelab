@@ -98,7 +98,7 @@ services:
       # - ACTUAL_API_CONCURRENCY=5
 
       # Authentication: static Bearer token or OIDC (see README)
-      - MCP_SSE_AUTHORIZATION=Bearer ${BEARER_TOKEN:?BEARER_TOKEN is required}
+      - MCP_SSE_AUTHORIZATION=${BEARER_TOKEN:?BEARER_TOKEN is required}
       # - AUTH_PROVIDER=none          # set to 'oidc' for JWKS JWT validation
       # - OIDC_ISSUER=${OIDC_ISSUER}  # required when AUTH_PROVIDER=oidc
       # - OIDC_RESOURCE=${OIDC_RESOURCE}
