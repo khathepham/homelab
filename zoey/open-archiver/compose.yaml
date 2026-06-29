@@ -41,7 +41,7 @@ services:
             - open-archiver-net
 
     meilisearch:
-        image: getmeili/meilisearch:v1.48.1
+        image: getmeili/meilisearch:v1.48.3
         container_name: open-archiver-meilisearch
         restart: unless-stopped
         environment:
