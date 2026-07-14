@@ -25,7 +25,6 @@ runs:
       uses: tailscale/github-action@v4
       with:
         authkey: ${{ inputs.ts-authkey }}
-        args: --accept-routes
 
     - name: Deploy
       uses: appleboy/ssh-action@v1
