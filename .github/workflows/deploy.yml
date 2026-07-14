@@ -15,7 +15,7 @@ on:
         type: choice
         options: [zoey, rumi]
       service:
-        description: "Service directory name (e.g. immich, jellyfin)"
+        description: "Comma-separated service directory names (e.g. immich,jellyfin)"
         required: true
         type: string
 
@@ -42,8 +42,8 @@ jobs:
           DISPATCH_SERVICE: ${{ inputs.service }}
         run: |
           if [ -n "$DISPATCH_HOST" ] && [ -n "$DISPATCH_SERVICE" ]; then
-            # Manual dispatch — deploy the specified service directly
-            matrix=$(jq -Rcn '[{host: $ENV.DISPATCH_HOST, service: $ENV.DISPATCH_SERVICE}]')
+            # Manual dispatch — deploy the specified services directly
+            matrix=$(jq -cn '$ENV.DISPATCH_SERVICE | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(. != "")) | map({host: $ENV.DISPATCH_HOST, service: .})')
           else
             matrix=$(git diff --name-only --diff-filter=d "$BASE_SHA" "$HEAD_SHA" \
               | grep -E '^(zoey|rumi)/[^/]+/' \
