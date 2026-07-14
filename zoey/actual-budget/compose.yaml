@@ -1,6 +1,6 @@
 services:
   actual_server:
-    image: docker.io/actualbudget/actual-server:26.6.0
+    image: docker.io/actualbudget/actual-server:26.7.0
     ports:
       - '5006:5006'
     volumes:
@@ -29,7 +29,7 @@ services:
   # Production-ready configuration with secrets management
 
   actual-mcp-server:
-    image: ghcr.io/agigante80/actual-mcp-server:0.7.11
+    image: ghcr.io/agigante80/actual-mcp-server:0.8.15
     container_name: actual-mcp-server
     restart: unless-stopped
     ports:
