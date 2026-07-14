@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.build-matrix.outputs.matrix }}
+      hosts: ${{ steps.build-matrix.outputs.hosts }}
       has_changes: ${{ steps.build-matrix.outputs.has_changes }}
     steps:
       - uses: actions/checkout@v7
@@ -53,10 +54,34 @@ jobs:
           fi
 
           echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+          echo "hosts=$(echo "$matrix" | jq -c '[.[].host] | unique')" >> $GITHUB_OUTPUT
           echo "has_changes=$([ "$matrix" != "[]" ] && echo true || echo false)" >> $GITHUB_OUTPUT
 
-  deploy:
+  sync-repos:
     needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host: ${{ fromJSON(needs.detect-changes.outputs.hosts) }}
+    name: "sync: ${{ matrix.host }}"
+    concurrency:
+      group: sync-${{ matrix.host }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
+      - uses: ./.github/actions/sync-repo
+        with:
+          host: ${{ matrix.host == 'zoey' && secrets.ZOEY_HOST || secrets.RUMI_HOST }}
+          username: khathepham
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ts-authkey: ${{ secrets.TS_AUTHKEY }}
+
+  deploy:
+    needs: [detect-changes, sync-repos]
     if: needs.detect-changes.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     strategy:

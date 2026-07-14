@@ -1,5 +1,5 @@
-name: Deploy Docker Stack
-description: Connect to the home network via Tailscale and deploy a docker compose stack (expects ~/homelab to already be synced by sync-repo)
+name: Sync Homelab Repo
+description: Connect to the home network via Tailscale and sync ~/homelab to origin/main
 
 inputs:
   host:
@@ -14,9 +14,6 @@ inputs:
   ts-authkey:
     description: Tailscale ephemeral, reusable auth key (tag:ci)
     required: true
-  compose-path:
-    description: Path to compose.yaml relative to ~/homelab
-    required: true
 
 runs:
   using: composite
@@ -26,10 +23,10 @@ runs:
       with:
         authkey: ${{ inputs.ts-authkey }}
 
-    - name: Deploy
+    - name: Sync repo
       uses: appleboy/ssh-action@v1
       with:
         host: ${{ inputs.host }}
         username: ${{ inputs.username }}
         key: ${{ inputs.ssh-key }}
-        script: cd ~/homelab && docker compose -f ${{ inputs.compose-path }} up -d --pull always
+        script: cd ~/homelab && git fetch origin main --prune && git reset --hard origin/main
