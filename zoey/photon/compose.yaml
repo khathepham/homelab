@@ -1,6 +1,6 @@
 services:
     photon:
-        image: rtuszik/photon-docker:2.3.0
+        image: rtuszik/photon-docker:2.3.1
         env_file: .env
         volumes:
             - /omv/docker-volumes/photon-data:/photon/data
