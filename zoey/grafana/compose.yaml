@@ -9,7 +9,7 @@ services:
       - grafana_volume:/var/lib/grafana
 
   loki:
-    image: grafana/loki:3.7.4
+    image: grafana/loki:3.7.5
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml

@@ -29,7 +29,7 @@ services:
   # Production-ready configuration with secrets management
 
   actual-mcp-server:
-    image: ghcr.io/agigante80/actual-mcp-server:0.9.3
+    image: ghcr.io/agigante80/actual-mcp-server:0.9.6
     container_name: actual-mcp-server
     restart: unless-stopped
     ports:
