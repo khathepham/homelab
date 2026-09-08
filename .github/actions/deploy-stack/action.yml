@@ -37,4 +37,5 @@ runs:
         host: ${{ inputs.host }}
         username: ${{ inputs.username }}
         key: ${{ inputs.ssh-key }}
+        command_timeout: 30m
         script: cd ~/homelab && docker compose -f ${{ inputs.compose-path }} up -d --pull always

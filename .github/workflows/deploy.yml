@@ -103,6 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         stack: ${{ fromJSON(needs.detect-changes.outputs.matrix) }}
     name: "${{ matrix.stack.host }}: ${{ matrix.stack.service }}"
