@@ -10,13 +10,17 @@ on:
   workflow_dispatch:
     inputs:
       host:
-        description: "Host to deploy to (zoey or rumi)"
-        required: true
+        description: "Host to deploy to (zoey or rumi) — required unless commit is given"
+        required: false
         type: choice
-        options: [zoey, rumi]
+        options: ['', zoey, rumi]
       service:
-        description: "Comma-separated service directory names (e.g. immich,jellyfin)"
-        required: true
+        description: "Comma-separated service directory names (e.g. immich,jellyfin) — required unless commit is given"
+        required: false
+        type: string
+      commit:
+        description: "Commit SHA/ref — deploy the services changed in that commit (takes precedence over host/service)"
+        required: false
         type: string
 
 jobs:
@@ -41,10 +45,22 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           DISPATCH_HOST: ${{ inputs.host }}
           DISPATCH_SERVICE: ${{ inputs.service }}
+          DISPATCH_COMMIT: ${{ inputs.commit }}
         run: |
-          if [ -n "$DISPATCH_HOST" ] && [ -n "$DISPATCH_SERVICE" ]; then
+          if [ -n "$DISPATCH_COMMIT" ]; then
+            # Manual dispatch — deploy the services changed in the given commit (vs its first parent)
+            git rev-parse --verify --quiet "${DISPATCH_COMMIT}^{commit}" >/dev/null \
+              || { echo "::error::Unknown commit: $DISPATCH_COMMIT"; exit 1; }
+            BASE_SHA="${DISPATCH_COMMIT}^"
+            HEAD_SHA="$DISPATCH_COMMIT"
+          fi
+
+          if [ -z "$DISPATCH_COMMIT" ] && [ -n "$DISPATCH_HOST" ] && [ -n "$DISPATCH_SERVICE" ]; then
             # Manual dispatch — deploy the specified services directly
             matrix=$(jq -cn '$ENV.DISPATCH_SERVICE | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(. != "")) | map({host: $ENV.DISPATCH_HOST, service: .})')
+          elif [ -z "$BASE_SHA" ] || [ -z "$HEAD_SHA" ]; then
+            echo "::error::Provide either 'commit', or both 'host' and 'service'"
+            exit 1
           else
             matrix=$(git diff --name-only --diff-filter=d "$BASE_SHA" "$HEAD_SHA" \
               | grep -E '^(zoey|rumi)/[^/]+/' \
