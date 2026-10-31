@@ -1,6 +1,6 @@
 services:
     open-archiver:
-        image: logiclabshq/open-archiver:v0.6.1
+        image: logiclabshq/open-archiver:v0.6.2
         container_name: open-archiver
         restart: unless-stopped
         ports:
@@ -41,7 +41,7 @@ services:
             - open-archiver-net
 
     meilisearch:
-        image: getmeili/meilisearch:v1.55.0
+        image: getmeili/meilisearch:v1.56.0
         container_name: open-archiver-meilisearch
         restart: unless-stopped
         environment:
