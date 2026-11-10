@@ -42,7 +42,7 @@ services:
             - open-archiver-net
 
     meilisearch:
-        image: getmeili/meilisearch:v1.56.1
+        image: getmeili/meilisearch:v1.56.2
         container_name: open-archiver-meilisearch
         restart: unless-stopped
         environment:
