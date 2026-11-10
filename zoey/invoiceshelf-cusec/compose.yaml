@@ -16,6 +16,12 @@ services:
     networks:
       - invoiceshelf
     restart: unless-stopped
+    healthcheck:
+      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   webapp:
     image: invoiceshelf/invoiceshelf:nightly
@@ -43,7 +49,14 @@ services:
       - invoiceshelf
     restart: unless-stopped
     depends_on:
-      - database
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/ || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
 networks:
   invoiceshelf:

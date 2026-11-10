@@ -11,6 +11,12 @@ services:
         published: 30000
         protocol: tcp
     restart: unless-stopped
+    healthcheck:
+      test: curl -f http://localhost:30000 || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   filebrowser:
     image: hurlenko/filebrowser
@@ -23,3 +29,9 @@ services:
     environment:
       - FB_BASEURL=/filebrowser
     restart: always
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

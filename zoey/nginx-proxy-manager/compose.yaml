@@ -9,3 +9,9 @@ services:
     volumes:
       - ${DATA_DIR}/nginx-proxy-manager/npm_data:/data
       - ${DATA_DIR}/nginx-proxy-manager/npm_letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: curl -f http://localhost:81/api/ || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

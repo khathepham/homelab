@@ -12,6 +12,12 @@ services:
     ports:
       - 7878:7878
     restart: unless-stopped
+    healthcheck:
+      test: curl -f http://localhost:7878/ping || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -26,6 +32,12 @@ services:
     restart: unless-stopped
     ports:
       - 8989:8989
+    healthcheck:
+      test: curl -f http://localhost:8989/ping || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   prowlarr:
     image: lscr.io/linuxserver/prowlarr:develop
@@ -41,6 +53,12 @@ services:
       - 9696:9696
     extra_hosts:
       - host.docker.internal:host-gateway
+    healthcheck:
+      test: curl -f http://localhost:9696/ping || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   seerr:
     image: ghcr.io/seerr-team/seerr:latest
@@ -81,6 +99,12 @@ services:
     volumes:
       - /var/lib/flaresolver:/config:z
     restart: unless-stopped
+    healthcheck:
+      test: curl -f http://localhost:8191/health || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
 networks:
   default: {}

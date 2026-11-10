@@ -7,3 +7,9 @@ services:
         ports:
             - '3001:3001'
         restart: always
+        healthcheck:
+            test: curl -f http://localhost:3001/api/status-page/heartbeat || exit 1
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 30s

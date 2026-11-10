@@ -71,3 +71,9 @@ services:
     shm_size: 1128mb
     restart: always
     user: "${UID}:${GID}"
+    healthcheck:
+      test: pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE_NAME} || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
