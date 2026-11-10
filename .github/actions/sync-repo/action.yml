@@ -1,0 +1,37 @@
+name: Sync Homelab Repo
+description: Connect to the home network via Tailscale and sync ~/homelab to origin/main
+
+inputs:
+  host:
+    description: Target host IP or hostname
+    required: true
+  username:
+    description: SSH username
+    required: true
+  ssh-key:
+    description: SSH private key
+    required: true
+  ts-oauth-client-id:
+    description: Tailscale OAuth client ID (auth_keys scope, tag:ci)
+    required: true
+  ts-oauth-secret:
+    description: Tailscale OAuth client secret
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Connect to Tailscale
+      uses: tailscale/github-action@v4
+      with:
+        oauth-client-id: ${{ inputs.ts-oauth-client-id }}
+        oauth-secret: ${{ inputs.ts-oauth-secret }}
+        tags: tag:ci
+
+    - name: Sync repo
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ inputs.host }}
+        username: ${{ inputs.username }}
+        key: ${{ inputs.ssh-key }}
+        script: cd ~/homelab && git fetch origin main --prune && git reset --hard origin/main

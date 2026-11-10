@@ -1,6 +1,6 @@
 services:
     photon:
-        image: rtuszik/photon-docker:2.3.0
+        image: rtuszik/photon-docker:2.5.0
         env_file:
           - path: ${INFISICAL_ENV_FILE:-.env}
             required: false

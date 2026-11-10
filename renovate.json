@@ -3,11 +3,5 @@
   "extends": [
     "config:recommended",
     "group:allNonMajor"
-  ],
-  "packageRules": [
-    {
-      "matchPackageNames": ["meilisearch", "getmeili/meilisearch"],
-      "enabled": false
-    }
   ]
 }

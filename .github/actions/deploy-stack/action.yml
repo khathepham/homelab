@@ -1,5 +1,5 @@
 name: Deploy Docker Stack
-description: Connect to the home network via Tailscale and deploy a docker compose stack
+description: Connect to the home network via Tailscale and deploy a docker compose stack (expects ~/homelab to already be synced by sync-repo)
 
 inputs:
   host:
@@ -11,8 +11,11 @@ inputs:
   ssh-key:
     description: SSH private key
     required: true
-  ts-authkey:
-    description: Tailscale ephemeral, reusable auth key (tag:ci)
+  ts-oauth-client-id:
+    description: Tailscale OAuth client ID (auth_keys scope, tag:ci)
+    required: true
+  ts-oauth-secret:
+    description: Tailscale OAuth client secret
     required: true
   compose-path:
     description: Path to compose.yaml relative to ~/homelab
@@ -22,10 +25,11 @@ runs:
   using: composite
   steps:
     - name: Connect to Tailscale
-      uses: tailscale/github-action@v3
+      uses: tailscale/github-action@v4
       with:
-        authkey: ${{ inputs.ts-authkey }}
-        args: --accept-routes
+        oauth-client-id: ${{ inputs.ts-oauth-client-id }}
+        oauth-secret: ${{ inputs.ts-oauth-secret }}
+        tags: tag:ci
 
     - name: Deploy
       uses: appleboy/ssh-action@v1
@@ -33,4 +37,5 @@ runs:
         host: ${{ inputs.host }}
         username: ${{ inputs.username }}
         key: ${{ inputs.ssh-key }}
-        script: cd ~/homelab && git fetch origin main --prune && git reset --hard origin/main && bash scripts/compose-up.sh "$(dirname '${{ inputs.compose-path }}')" --pull always
+        command_timeout: 30m
+        script: cd ~/homelab && bash scripts/compose-up.sh "$(dirname '${{ inputs.compose-path }}')" --pull always
