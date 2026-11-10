@@ -12,7 +12,8 @@ services:
     volumes:
       - mealie-data:/app/data/
     env_file:
-      - .env
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false
     depends_on:
       postgres:
         condition: service_healthy

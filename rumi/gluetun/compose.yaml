@@ -21,7 +21,9 @@ services:
     networks:
       - default
       - arr_default
-    env_file: .env
+    env_file:
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false
     healthcheck:
       test: [CMD, wget, -qO-, https://1.1.1.1]
       interval: 10s

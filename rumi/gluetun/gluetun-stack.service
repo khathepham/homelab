@@ -1,13 +1,15 @@
 [Unit]
 Description=Gluetun VPN + qBittorrent Stack
 Requires=docker.service omv-media.mount omv-docker\x2dvolumes.mount
-After=docker.service omv-media.mount omv-docker\x2dvolumes.mount
+Wants=network-online.target
+After=docker.service omv-media.mount omv-docker\x2dvolumes.mount network-online.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/home/khathepham/homelab/rumi/gluetun
-ExecStart=/usr/bin/docker compose up -d
+# Fetches secrets from Infisical (see scripts/compose-up.sh), so it needs the network.
+ExecStart=/bin/bash /home/khathepham/homelab/scripts/compose-up.sh rumi/gluetun
 ExecStop=/usr/bin/docker compose down
 TimeoutStartSec=120
 

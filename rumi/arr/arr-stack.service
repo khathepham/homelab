@@ -1,13 +1,15 @@
 [Unit]
 Description=Arr Stack (Sonarr, Radarr, Prowlarr, Seerr, Flaresolverr)
 Requires=docker.service omv-media.mount
-After=docker.service omv-media.mount
+Wants=network-online.target
+After=docker.service omv-media.mount network-online.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/home/khathepham/homelab/rumi/arr
-ExecStart=/usr/bin/docker compose up -d
+# Fetches secrets from Infisical (see scripts/compose-up.sh), so it needs the network.
+ExecStart=/bin/bash /home/khathepham/homelab/scripts/compose-up.sh rumi/arr
 ExecStop=/usr/bin/docker compose down
 TimeoutStartSec=120
 

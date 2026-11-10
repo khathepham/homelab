@@ -3,7 +3,9 @@ services:
     image: couchdb:3.5.3
     container_name: obs-livesync-couchdb
     user: 5984:5984
-    env_file: .env
+    env_file:
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false
     volumes:
       - ${DATA_DIR}/livesync/couchdb-data:/opt/couchdb/data
       - ${DATA_DIR}/livesync/couchdb-etc:/opt/couchdb/etc/local.d
