@@ -20,7 +20,8 @@ services:
       - ${UPLOAD_LOCATION}:/data
       - /etc/localtime:/etc/localtime:ro
     env_file:
-      - .env
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false
     ports:
       - '2283:2283'
     depends_on:
@@ -41,7 +42,8 @@ services:
     volumes:
       - ${DATA_DIR}/immich/model-cache:/cache
     env_file:
-      - .env
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false
     restart: always
     healthcheck:
       disable: false

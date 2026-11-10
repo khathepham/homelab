@@ -2,7 +2,9 @@ services:
   porkbun-ddns:
     image: "mietzen/porkbun-ddns:1.1.27"
     container_name: porkbun-ddns
-    env_file: .env
+    env_file:
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false
     restart: unless-stopped
 
 # # Uncomment below to let it detect ipv6 address:

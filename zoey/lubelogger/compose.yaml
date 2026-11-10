@@ -10,4 +10,5 @@ services:
     ports:
       - 8158:8080
     env_file:
-      - .env
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false

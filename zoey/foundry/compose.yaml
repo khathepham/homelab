@@ -5,9 +5,10 @@ services:
     volumes:
       - ${DATA_DIR}/foundryvtt/foundrydata:/data
     env_file:
-      - .env
+      - path: ${INFISICAL_ENV_FILE:-.env}
+        required: false
     environment:
-      - FOUNDRY_MINIFY_STATIC_FILES = true
+      - FOUNDRY_MINIFY_STATIC_FILES=true
       
     ports:
       - target: 30000
