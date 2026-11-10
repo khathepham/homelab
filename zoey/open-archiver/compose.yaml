@@ -47,7 +47,10 @@ services:
         restart: unless-stopped
         environment:
             MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
-            MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE: true
+            # Upgrade the on-disk database when the image version changes. Without
+            # it, a version bump (e.g. 1.50 -> 1.56) makes meilisearch refuse to
+            # start. Replaces MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE, which 1.56 ignores.
+            MEILI_UPGRADE_DB: "true"
 
         volumes:
             - ${OMV_DIR}/openarchiver/meilidata:/meili_data
