@@ -20,7 +20,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres:17
+    image: postgres:19
     restart: unless-stopped
     volumes:
       - mealie-pgdata:/var/lib/postgresql/data
